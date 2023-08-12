@@ -1,4 +1,5 @@
 export interface IAsteroid {
+	id: string;
 	name: string;
 	size: number;
 	hazardous: boolean;

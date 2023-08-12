@@ -1,0 +1,11 @@
+.meteorList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+}
+
+.meteorCard {
+  width: calc(33.33% - 20px);
+}

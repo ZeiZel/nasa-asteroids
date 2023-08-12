@@ -1,22 +1,31 @@
-class NasaApi {
-	apiKey: string;
-	baseUrl: string = 'https://api.nasa.gov';
+import { INasaApi } from '@/api/nasa.api.interface';
+import { IAsteroid } from '@/interfaces/asteroid.interface';
 
-	constructor(apiKey: string) {
-		this.apiKey = apiKey;
+export default class NasaApi implements INasaApi {
+	apiKey: string = process.env.NEXT_PUBLIC_API_KEY as string;
+	baseUrl: string = process.env.NEXT_PUBLIC_NASA_URL as string;
+	size: number;
+	page: number;
+
+	constructor(size: number, page: number) {
+		this.size = size;
+		this.page = page;
 	}
 
-	async getNearestAsteroids() {
+	async getNearestAsteroids(): Promise<IAsteroid[] | null> {
 		try {
-			const response = await fetch(`${this.baseUrl}/neo/rest/v1/feed?api_key=${this.apiKey}`);
+			const response = await fetch(
+				`${this.baseUrl}/neo/rest/v1/feed?api_key=${this.apiKey}&size=${this.size}&page=${this.page}`,
+			);
 			const data = await response.json();
 
-			const asteroids = [];
+			const asteroids: IAsteroid[] = [];
 
 			for (const date in data.near_earth_objects) {
 				const dayAsteroids = data.near_earth_objects[date];
 				for (const asteroidData of dayAsteroids) {
-					const asteroid = {
+					const asteroid: IAsteroid = {
+						id: asteroidData.id,
 						name: asteroidData.name,
 						size: asteroidData.estimated_diameter.meters.estimated_diameter_max,
 						hazardous: asteroidData.is_potentially_hazardous_asteroid,
@@ -31,22 +40,11 @@ class NasaApi {
 
 			return asteroids;
 		} catch (error) {
-			console.error('Error fetching asteroid data:', error);
-			throw error;
+			if (error instanceof Error) {
+				console.error(`${error.message}`);
+			}
+
+			return null;
 		}
 	}
 }
-
-// Используйте ваш ключ API NASA
-const apiKey = 'YOUR_NASA_API_KEY';
-const nasaApi = new NasaApi(apiKey);
-
-// Пример использования
-nasaApi
-	.getNearestAsteroids()
-	.then((asteroids) => {
-		console.log('Список ближайших астероидов:', asteroids);
-	})
-	.catch((error) => {
-		console.error('Ошибка:', error);
-	});
